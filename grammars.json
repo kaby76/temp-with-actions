@@ -1,1 +1,11 @@
-hi there
+.:
+LICENSE
+README.md
+a
+grammars.json
+
+./a:
+b
+
+./a/b:
+c
