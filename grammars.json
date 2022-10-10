@@ -3,9 +3,14 @@ LICENSE
 README.md
 a
 grammars.json
+myreindex.sh
 
 ./a:
 b
+d
 
 ./a/b:
 c
+
+./a/d:
+e
