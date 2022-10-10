@@ -30,7 +30,7 @@ jobs:
         fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
     - name: Create local changes
       run: |
-        bash myreindex.sh
+        cd _scripts; bash myreindex.sh
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
