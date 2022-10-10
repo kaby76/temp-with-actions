@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-ls a -R > ../grammars.json
+ls -R ../a > ../grammars.json
 git diff --quiet
 if [ "$?" == "1" ]; then
   git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
