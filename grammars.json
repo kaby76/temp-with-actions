@@ -1,17 +1,9 @@
-.:
-LICENSE
-README.md
-a
-empty.txt
-grammars.json
-myreindex.sh
-
-./a:
+a:
 b
 d
 
-./a/b:
+a/b:
 c
 
-./a/d:
+a/d:
 e
