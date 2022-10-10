@@ -1,0 +1,371 @@
+The basic problem is that the [cpp grammar](https://github.com/antlr/grammars-v4/tree/master/cpp) isn't optimized for performance.
+
+There are multiple issues, but let's start with the most egregious: expressions. The `expression` rule as defined in [grammars-v4/cpp/CPP14Parser.g4](https://github.com/antlr/grammars-v4/blob/20139bd253876a131282949ce0c1d85bfbfc21bf/cpp/CPP14Parser.g4#L221). Let's consider what the parse tree would be for your input.
+
+#### Input:
+```
+int main(){ return a > 0 ?
+         0 : a > 1 ?
+             1 : a > x ?
+                x : y;
+ }
+```
+#### Parse tree:
+```
+(translationUnit
+ (declarationseq
+  (declaration
+   (functionDefinition
+    (declSpecifierSeq
+     (declSpecifier
+      (typeSpecifier
+       (trailingTypeSpecifier
+        (simpleTypeSpecifier int
+    )))))
+    (declarator
+     (pointerDeclarator
+      (noPointerDeclarator
+       (noPointerDeclarator
+        (declaratorid
+         (idExpression
+          (unqualifiedId main
+       ))))
+       (parametersAndQualifiers
+        (
+        )
+    ))))
+    (functionBody
+     (compoundStatement
+      {
+      (statementSeq
+       (statement
+        (jumpStatement return
+         (expression
+          (assignmentExpression
+           (conditionalExpression
+            (logicalOrExpression
+             (logicalAndExpression
+              (inclusiveOrExpression
+               (exclusiveOrExpression
+                (andExpression
+                 (equalityExpression
+                  (relationalExpression
+                   (shiftExpression
+                    (additiveExpression
+                     (multiplicativeExpression
+                      (pointerMemberExpression
+                       (castExpression
+                        (unaryExpression
+                         (postfixExpression
+                          (primaryExpression
+                           (idExpression
+                            (unqualifiedId a
+                   ))))))))))
+                   >
+                   (shiftExpression
+                    (additiveExpression
+                     (multiplicativeExpression
+                      (pointerMemberExpression
+                       (castExpression
+                        (unaryExpression
+                         (postfixExpression
+                          (primaryExpression
+                           (literal 0
+            ))))))))))))))))
+            ?
+            (expression
+             (assignmentExpression
+              (conditionalExpression
+               (logicalOrExpression
+                (logicalAndExpression
+                 (inclusiveOrExpression
+                  (exclusiveOrExpression
+                   (andExpression
+                    (equalityExpression
+                     (relationalExpression
+                      (shiftExpression
+                       (additiveExpression
+                        (multiplicativeExpression
+                         (pointerMemberExpression
+                          (castExpression
+                           (unaryExpression
+                            (postfixExpression
+                             (primaryExpression
+                              (literal 0
+            )))))))))))))))))))
+            :
+            (assignmentExpression
+             (conditionalExpression
+              (logicalOrExpression
+               (logicalAndExpression
+                (inclusiveOrExpression
+                 (exclusiveOrExpression
+                  (andExpression
+                   (equalityExpression
+                    (relationalExpression
+                     (shiftExpression
+                      (additiveExpression
+                       (multiplicativeExpression
+                        (pointerMemberExpression
+                         (castExpression
+                          (unaryExpression
+                           (postfixExpression
+                            (primaryExpression
+                             (idExpression
+                              (unqualifiedId a
+                     ))))))))))
+                     >
+                     (shiftExpression
+                      (additiveExpression
+                       (multiplicativeExpression
+                        (pointerMemberExpression
+                         (castExpression
+                          (unaryExpression
+                           (postfixExpression
+                            (primaryExpression
+                             (literal 1
+              ))))))))))))))))
+              ?
+              (expression
+               (assignmentExpression
+                (conditionalExpression
+                 (logicalOrExpression
+                  (logicalAndExpression
+                   (inclusiveOrExpression
+                    (exclusiveOrExpression
+                     (andExpression
+                      (equalityExpression
+                       (relationalExpression
+                        (shiftExpression
+                         (additiveExpression
+                          (multiplicativeExpression
+                           (pointerMemberExpression
+                            (castExpression
+                             (unaryExpression
+                              (postfixExpression
+                               (primaryExpression
+                                (literal 1
+              )))))))))))))))))))
+              :
+              (assignmentExpression
+               (conditionalExpression
+                (logicalOrExpression
+                 (logicalAndExpression
+                  (inclusiveOrExpression
+                   (exclusiveOrExpression
+                    (andExpression
+                     (equalityExpression
+                      (relationalExpression
+                       (shiftExpression
+                        (additiveExpression
+                         (multiplicativeExpression
+                          (pointerMemberExpression
+                           (castExpression
+                            (unaryExpression
+                             (postfixExpression
+                              (primaryExpression
+                               (idExpression
+                                (unqualifiedId a
+                       ))))))))))
+                       >
+                       (shiftExpression
+                        (additiveExpression
+                         (multiplicativeExpression
+                          (pointerMemberExpression
+                           (castExpression
+                            (unaryExpression
+                             (postfixExpression
+                              (primaryExpression
+                               (idExpression
+                                (unqualifiedId x
+                )))))))))))))))))
+                ?
+                (expression
+                 (assignmentExpression
+                  (conditionalExpression
+                   (logicalOrExpression
+                    (logicalAndExpression
+                     (inclusiveOrExpression
+                      (exclusiveOrExpression
+                       (andExpression
+                        (equalityExpression
+                         (relationalExpression
+                          (shiftExpression
+                           (additiveExpression
+                            (multiplicativeExpression
+                             (pointerMemberExpression
+                              (castExpression
+                               (unaryExpression
+                                (postfixExpression
+                                 (primaryExpression
+                                  (idExpression
+                                   (unqualifiedId x
+                ))))))))))))))))))))
+                :
+                (assignmentExpression
+                 (conditionalExpression
+                  (logicalOrExpression
+                   (logicalAndExpression
+                    (inclusiveOrExpression
+                     (exclusiveOrExpression
+                      (andExpression
+                       (equalityExpression
+                        (relationalExpression
+                         (shiftExpression
+                          (additiveExpression
+                           (multiplicativeExpression
+                            (pointerMemberExpression
+                             (castExpression
+                              (unaryExpression
+                               (postfixExpression
+                                (primaryExpression
+                                 (idExpression
+                                  (unqualifiedId y
+         ))))))))))))))))))))))))))
+         ;
+      )))
+      }
+ )))))
+ <EOF>
+)
+```
+
+Rules that define expressions like this are what I call an "anti-pattern" for Antlr because the resulting parse trees are huge even for simple expression. The parse tree for this simple example contains large chains of (non-productive) single nodes. 
+
+The problem with expression in the grammar (among others) is that the grammar uses chains of production to define the precedence of the operators in expressions. You need to change expressions to an "alt-ordered ambiguous rule".
+
+#### New expression rule
+To do this in a "general way", examine the parse tree and identify the sets of rules that form a single-child chain. Then, create and replace the rule that is the head of the node chain with the children in reverse order.
+
+```
+expression:
+ literal+
+ | This
+ | LeftParen expression RightParen
+ | idExpression
+ | lambdaExpression
+ | Doublecolon? Delete (LeftBracket RightBracket)? expression
+ | Doublecolon? New newPlacement? (newTypeId | (LeftParen theTypeId RightParen)) newInitializer?
+ | Noexcept LeftParen expression RightParen
+ | (PlusPlus | MinusMinus | unaryOperator | Sizeof) expression
+ | Sizeof ( LeftParen theTypeId RightParen | Ellipsis LeftParen Identifier RightParen)
+ | Alignof LeftParen theTypeId RightParen
+ | LeftParen theTypeId RightParen expression
+ | expression (DotStar | ArrowStar) expression
+ | expression (Star | Div | Mod) expression
+ | expression (Plus | Minus) expression
+ | expression shiftOperator expression
+ | expression (Less | Greater | LessEqual | GreaterEqual) expression
+ | expression (Equal | NotEqual) expression
+ | expression And expression
+ | expression Caret expression
+ | expression Or expression
+ | expression AndAnd expression
+ | expression OrOr expression
+ | expression assignmentOperator initializerClause
+ | expression Question expression Colon expression
+ | throwExpression
+ ;
+```
+#### New tree
+```
+(translationUnit
+ (declarationseq
+  (declaration
+   (functionDefinition
+    (declSpecifierSeq
+     (declSpecifier
+      (typeSpecifier
+       (trailingTypeSpecifier
+        (simpleTypeSpecifier int
+    )))))
+    (declarator
+     (pointerDeclarator
+      (noPointerDeclarator
+       (noPointerDeclarator
+        (declaratorid
+         (idExpression
+          (unqualifiedId main
+       ))))
+       (parametersAndQualifiers
+        (
+        )
+    ))))
+    (functionBody
+     (compoundStatement
+      {
+      (statementSeq
+       (statement
+        (jumpStatement
+         return
+         (expression
+          (expression
+           (expression
+            (expression
+             (expression
+              (idExpression
+               (unqualifiedId a
+             )))
+             >
+             (expression
+              (literal 0
+            )))
+            ?
+            (expression
+             (literal
+              0
+            ))
+            :
+            (expression
+             (expression
+              (idExpression
+               (unqualifiedId
+                a
+             )))
+             >
+             (expression
+              (literal
+               1
+           ))))
+           ?
+           (expression
+            (literal
+             1
+           ))
+           :
+           (expression
+            (expression
+             (idExpression
+              (unqualifiedId
+               a
+            )))
+            >
+            (expression
+             (idExpression
+              (unqualifiedId
+               x
+          )))))
+          ?
+          (expression
+           (idExpression
+            (unqualifiedId
+             x
+          )))
+          :
+          (expression
+           (idExpression
+            (unqualifiedId
+             y
+         ))))
+         ;
+      )))
+      }
+ )))))
+ <EOF>
+)
+```
+NB: You'll have to make sure the alts of the rewritten expression rule are in the correct order. This is just off the top of my head.
+
+The reason the grammar is written this way is because it was hand-scraped directly from the ISO C++ Specification. Rewriting this grammmar is on the "to do" list, but I haven't had time yet for doing that.
+
+Antlr4 can take terrible grammars and still try to make a parser out of it. But, writing grammars that are *efficient* is a skill at a completely different level.
