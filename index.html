@@ -1,0 +1,306 @@
+
+<!DOCTYPE HTML>
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sort an HTML Table by Column Using Javascript</title>
+<meta name="title" content="Sort an HTML Table by Column Using Javascript">
+<meta name="description" content="Sort an HTML table by clicking on the column table header using Javascript.">
+<meta name="keywords" content="sort,html,table,column,javascript">
+<meta name="category" content="Javascript">
+<link rel="canonical" href="https://lage.us/Javascript-Sort-HTML-Table-by-Column.html">
+<meta name="category" content="Javascript">
+<link rel="stylesheet" href="css.css">
+<link rel="stylesheet" href="prism.css">
+<style>
+#menu{position:fixed;transform:translateX(-380px);}
+</style>
+</head>
+
+<body>
+<div id="header">
+<div id="logoheader"><a href="/">Lage.us</a></div>
+<span>
+<a href="php.html">PHP Snippets</a> | 
+<a href="html.html">HTML Snippets</a> | 
+<a href="javascript.html">Javascript Snippets</a> | 
+<a href="css.html">CSS Snippets</a>
+</span>
+</div>
+
+<div id="content">
+<!-- start content -->
+<h1>Sort an HTML Table by Column Using Javascript</h1>
+
+<p>Sort an HTML table by clicking on the column table header using Javascript.</p>
+
+<p><strong>The approach:</strong></p>
+
+<p>Since a HTML table is like a 2d array, use the technique found at <a href="Javascript-Sort-2d-Array-by-Column.html">Sort a Javascript 2d Array by Any Column Value</a> Javascript code to create a function that sorts by column passed as a parameter. First extract the innerHTML from the table cells and put them in a corresponding 2d Javascript array. Then sort the array. Use the reverse process to put the array values back into the innerHTML of the HTML table in the corresponding locations to the 2d Javascript array.</p>
+
+<p>This is short, lightweight code by comparison to many other methods for sorting an HTML table.</p>
+
+<pre>
+<code class="language-clike">/*
+A few requirements for configuring the table:
+1. The table must have id=&quot;sortable&quot;, i.e. &lt;table id=&quot;sortable&quot;&gt;
+2. The table needs to have a table header, and the table header must have
+&nbsp;  onclick=&quot;sortBy(n)&quot;, where n is the column number starting with 0
+&nbsp;  i.e. &lt;th onclick=&quot;sortBy(0)&quot;&gt;Title of First Column&lt;/th&gt;
+*/
+
+cPrev = -1; // global var saves the previous c, used to
+            // determine if the same column is clicked again
+
+function sortBy(c) {
+&nbsp;&nbsp; &nbsp;rows = document.getElementById(&quot;sortable&quot;).rows.length; // num of rows
+&nbsp;&nbsp; &nbsp;columns = document.getElementById(&quot;sortable&quot;).rows[0].cells.length; // num of columns
+&nbsp;&nbsp; &nbsp;arrTable = [...Array(rows)].map(e =&gt; Array(columns)); // create an empty 2d array
+
+&nbsp;&nbsp; &nbsp;for (ro=0; ro&lt;rows; ro++) { // cycle through rows
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;for (co=0; co&lt;columns; co++) { // cycle through columns
+&nbsp;           // assign the value in each row-column to a 2d array by row-column
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;arrTable[ro][co] = document.getElementById(&quot;sortable&quot;).rows[ro].cells[co].innerHTML;
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
+&nbsp;&nbsp; &nbsp;}
+
+&nbsp;&nbsp; &nbsp;th = arrTable.shift(); // remove the header row from the array, and save it
+&nbsp;&nbsp; &nbsp;
+&nbsp;&nbsp; &nbsp;if (c !== cPrev) { // different column is clicked, so sort by the new column
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;arrTable.sort(
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;function (a, b) {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;if (a[c] === b[c]) {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return 0;
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;} else {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;return (a[c] &lt; b[c]) ? -1 : 1;
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;);
+&nbsp;&nbsp; &nbsp;} else { // if the same column is clicked then reverse the array
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;arrTable.reverse();
+&nbsp;&nbsp; &nbsp;}
+&nbsp;&nbsp; &nbsp;
+&nbsp;&nbsp; &nbsp;cPrev = c; // save in previous c
+
+&nbsp;&nbsp; &nbsp;arrTable.unshift(th); // put the header back in to the array
+
+    // cycle through rows-columns placing values from the array back into the html table
+&nbsp;&nbsp; &nbsp;for (ro=0; ro&lt;rows; ro++) {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;for (co=0; co&lt;columns; co++) {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;document.getElementById(&quot;sortable&quot;).rows[ro].cells[co].innerHTML = arrTable[ro][co];
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;}
+&nbsp;&nbsp; &nbsp;}
+}
+</code></pre>
+
+<h3><span style="color:#008000;">Example:</span></h3>
+
+<p><b>CSS</b></p>
+
+<p>This CSS just gives the header a cursor pointer and sets some cell spacing and text alignment for the HTML table that is to be sorted.</p>
+
+<pre>
+<code class="language-CSS">table{text-align:left;}
+th,td{padding:4px 8px;}
+th{cursor:pointer;}
+</code></pre>
+
+<p><strong>HTML</strong></p>
+
+<p>Given this HTML sample table, click on the column title to sort it.</p>
+
+<pre>
+<code class="language-HTML">&lt;table id=&quot;sortable&quot;&gt;
+	&lt;tr&gt;
+		&lt;th onclick=&quot;sortBy(0)&quot;&gt;Name&lt;/th&gt;
+		&lt;th onclick=&quot;sortBy(1)&quot;&gt;Position&lt;/th&gt;
+		&lt;th onclick=&quot;sortBy(2)&quot;&gt;Office&lt;/th&gt;
+		&lt;th onclick=&quot;sortBy(3)&quot;&gt;Age&lt;/th&gt;
+		&lt;th onclick=&quot;sortBy(4)&quot;&gt;Start date&lt;/th&gt;
+	&lt;/tr&gt;
+    .
+    .
+    .
+    etc...
+</code></pre>
+<style type="text/css">table{text-align:left;}
+th,td{padding:4px 8px;}
+th{cursor:pointer;}
+</style>
+<h3><span style="color:#0000FF;"><strong>Click headers to try it out.</strong></span></h3>
+
+<table id="sortable">
+	<tbody>
+		<tr>
+			<th onclick="sortBy(0)">Name</th>
+			<th onclick="sortBy(1)">Position</th>
+			<th onclick="sortBy(2)">Office</th>
+			<th onclick="sortBy(3)">Age</th>
+			<th onclick="sortBy(4)">Start date</th>
+		</tr>
+		<tr>
+			<td>Tiger Nixon</td>
+			<td>System Architect</td>
+			<td>Edinburgh</td>
+			<td>61</td>
+			<td>2011/04/25</td>
+		</tr>
+		<tr>
+			<td>Garrett Winters</td>
+			<td>Accountant</td>
+			<td>Tokyo</td>
+			<td>63</td>
+			<td>2011/07/25</td>
+		</tr>
+		<tr>
+			<td>Ashton Cox</td>
+			<td>Junior Technical Author</td>
+			<td>San Francisco</td>
+			<td>66</td>
+			<td>2009/01/12</td>
+		</tr>
+		<tr>
+			<td>Cedric Kelly</td>
+			<td>Senior Javascript Developer</td>
+			<td>Edinburgh</td>
+			<td>22</td>
+			<td>2012/03/29</td>
+		</tr>
+		<tr>
+			<td>Airi Satou</td>
+			<td>Accountant</td>
+			<td>Tokyo</td>
+			<td>33</td>
+			<td>2008/11/28</td>
+		</tr>
+		<tr>
+			<td>Brielle Williamson</td>
+			<td>Integration Specialist</td>
+			<td>New York</td>
+			<td>61</td>
+			<td>2012/12/02</td>
+		</tr>
+		<tr>
+			<td>Herrod Chandler</td>
+			<td>Sales Assistant</td>
+			<td>San Francisco</td>
+			<td>59</td>
+			<td>2012/08/06</td>
+		</tr>
+	</tbody>
+</table>
+<script>
+cPrev = -1;
+function sortBy(c) {
+	rows = document.getElementById("sortable").rows.length;
+	columns = document.getElementById("sortable").rows[0].cells.length;
+	arrTable = [...Array(rows)].map(e => Array(columns));
+
+	for (ro=0; ro<rows; ro++) {
+		for (co=0; co<columns; co++) {
+			arrTable[ro][co] = document.getElementById("sortable").rows[ro].cells[co].innerHTML;
+		}
+	}
+
+	th = arrTable.shift();
+	
+	if (c !== cPrev) {
+		arrTable.sort(
+			function (a, b) {
+				if (a[c] === b[c]) {
+					return 0;
+				} else {
+					return (a[c] < b[c]) ? -1 : 1;
+				}
+			}
+		);
+	} else {
+		arrTable.reverse();
+	}
+	
+	cPrev = c;
+	
+	arrTable.unshift(th);
+	
+	for (ro=0; ro<rows; ro++) {
+		for (co=0; co<columns; co++) {
+			document.getElementById("sortable").rows[ro].cells[co].innerHTML = arrTable[ro][co];
+		}
+	}
+}
+</script>
+<!-- end content -->
+</div>
+
+<div id="copywrite"><div id="login"><a href="javascript:log()"></a></div>Copyright &copy; Lage.us Website Development | <a rel="nofollow" href="disclaimer.html">Disclaimer</a> | <a rel="nofollow" href="privacy-policy.html">Privacy Policy</a> | <a href="terms-of-use.html">Terms of Use</a></div>
+
+<input id="menucheckbox" type="checkbox">
+<label id="menuicon" for="menucheckbox"></label>
+<div id="menu">
+<h4>Main Menu</h4>
+<div class="nearlistcontainer">
+<a href="php.html">PHP Snippets</a>
+<a href="html.html">HTML Snippets</a>
+<a href="javascript.html">Javascript Snippets</a>
+<a href="css.html">CSS Snippets</a>
+</div>
+
+<h4>Javascript Snippets</h4>
+<div class="nearlistcontainer">
+<a href="Javascript-array_unique.html">Javascript array_unique (similar to PHP)</a>
+<a href="Javascript-Sort-2d-Array-by-Column.html">Sort a Javascript 2d Array by Any Column Value</a>
+<a href="Javascript-Sort-HTML-Table-by-Column.html">Sort an HTML Table by Column Using Javascript</a>
+<a href="Javascript-Variable-Name-Function-Call.html">Variable Name Functions</a>
+<a href="Javascript-Accordion-Menu.html">Accordion Menu</a>
+<a href="Javascript-replaceAll().html">Replace All function using Javascript</a>
+<a href="Javascript-substr-count.html">Occurrences of Substring in String</a>
+<a href="Javascript-Detect-Swipe-for-Touch-and-Mouse.html">Detect Javascript Swipe for Touch Screens and Mouse</a>
+<a href="Javascript-Pythagorean-Get-Hypotenuse.html">Get Hypotenuse Using Pythagorean</a>
+<a href="Javascript-Image-Zoom-Window-with-Javascript.html">Create an Image Zoom Window with Javascript</a>
+<a href="Javascript-Get-String-Between-Strings.html">Get String Between Strings with Javascript</a>
+<a href="Javascript-Immediately-Invoke-Function.html">Immediately Invoke a Javascript Function</a>
+<a href="Javascript-String-Contains-Substring.html">Check if String Contains Substring</a>
+<a href="Javascript-Round-Numbers-to-Specified-Place-Value.html">Round Numbers Accurately to Specified Place Value with Javascript</a>
+<a href="Javascript-String-Contains-Substring.html">Check if String Contains Substring</a>
+<a href="Javascript-Pass-Variables-to-Another-Page.html">Pass Javascript Variables to Another Page</a>
+<a href="Javascript-Split-String-Into-2-d-Array.html">Split a String Into a 2-Dimensional-Array</a>
+<a href="Javascript-Strip-HTML-Tags.html">Strip HTML Tags from String</a>
+<a href="Javascript-Remove-Quotes-From-String.html">Remove Quotes from String</a>
+<a href="Javascript-Remove-Return-Characters-From-String.html">Remove Return Characters From String</a>
+<a href="Javascript-Determine-If-Variable-Is-Number.html">Determine if a Javascript Variable is a Number</a>
+<a href="Javascript-Copy-To-Clipboard.html">Copy text from an input box to the clipboard</a>
+<a href="Javascript-Fade-In-Or-Out-An-Elelemt.html">Fade an Element In or Out with a Toggle</a>
+<a href="Javascript-File-Get-Contents.html">Javascript Equivalent to file_get_contents("filename.html")</a>
+<a href="Javascript-Random-Shuffle-Array.html">Random Shuffle Javascript Array</a>
+<a href="Javascript-Determine-When-Element-Is-In-View.html">Determine When HTML Element Comes Into Viewport While Scrolling</a>
+<a href="Javascript-Conditionally-Load-JS-File.html">Conditionally Load a Javascript File</a>
+<a href="Javascript-Send-Form-With-No-Target.html">Javascript Send Form With No Target</a>
+<a href="Javascript-Mobile-Phone-Check.html">Check for Mobile Phone</a>
+<a href="Javascript-Get_Date.html">Get the Date String in Milliseconds</a>
+<a href="Javascript-array_unique.html">Javascript Equivalent to array_unique()</a>
+<a href="Javascript-Equivalent-to-natsort.html">Javascript Equivalent to the PHP natsort()</a>
+<a href="Javascript-Watch-Variables-for-Change.html">Watch or Monitor Javascript Variables for Change</a>
+<a href="Javascript-Array_Values.html">Javascript Equivalent to the PHP array_values function</a>
+<a href="Javascript-Item-in-2d-Array-Using-indexOf.html">Find if Item Exists in 2-Dimentional Javascript Array</a>
+<a href="Javascript-Equivalent-to-PHP-file_exists(filename).html">Javascript Equivalent to PHP file_exist(filename)</a>
+</div>
+
+<h4>My sites</h4>
+<div class="nearlistcontainer">
+<a href="https://www.indoorclimbing.com/">indoorclimbing.com</a>
+<a href="https://www.ziplinerider.com/">ziplinerider.com</a>
+<a href="https://antiqueable.com/">antiqueable.com</a>
+<a href="https://escaperoomplayer.com/">escaperoomplayer.com</a>
+<a href="https://jumpcenters.com/trampoline/">Trampoline Jumpcenters</a>
+<a href="https://jumpcenters.com/inflatable/">Inflatable Play Centers</a>
+</div>
+</div>
+
+<script>
+(function(){var a=document.createElement('script');a.type='text/javascript';a.async=true;a.src="e.js";var b=document.getElementsByTagName('script')[0];b.parentNode.insertBefore(a,b);})();
+</script>
+<script src="prism.js"></script>
+</body>
+</html>
